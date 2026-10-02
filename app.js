@@ -103,11 +103,14 @@ function renderTicker(prev = {}) {
     $('#ticker').innerHTML = `<li class="empty">${icon('warning-circle')}Noch keine Kursdaten. Die GitHub Action füllt sie beim nächsten Lauf.</li>`;
     return;
   }
-  $('#ticker').innerHTML = list.map((t) => `
-    <li class="tile" data-id="${esc(t.id)}">
+  const first = !state.tickerShown;
+  state.tickerShown = true;
+  $('#ticker').innerHTML = list.map((t, i) => `
+    <li class="tile${first ? ' enter' : ''}" data-id="${esc(t.id)}" style="--i: ${i}">
       <button type="button" data-open="t:${esc(t.id)}" aria-label="${esc(t.name)}: Details">
         <span class="tile-name">${esc(t.name)}${t.stale ? icon('warning-circle', 'ic stale-ic') : ''}</span>
         <span class="tile-price">${priceText(t)}</span>
+        ${miniSpark(state.history[t.id], t.id === 'us10y' ? t.change : t.dp)}
         <span class="tile-foot">${tickerChange(t)}<span class="tile-sub">${tickerSub(t)}</span></span>
       </button>
     </li>`).join('');
@@ -115,6 +118,21 @@ function renderTicker(prev = {}) {
     const p = prev[t.id];
     if (p != null && t.price != null && p !== t.price) flash(t.id, t.price > p);
   }
+}
+
+// Kleiner Kursverlauf für die Kacheln (letzte 48 Messpunkte, ca. 16 Std.)
+function miniSpark(points, dirValue) {
+  const pts = (points || []).slice(-48);
+  if (pts.length < 3) return '<svg class="tile-spark" aria-hidden="true"></svg>';
+  const w = 100, h = 26;
+  const ys = pts.map((p) => p[1]);
+  const y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${((i / (pts.length - 1)) * w).toFixed(1)},${(h - 2 - ((p[1] - y0) / (y1 - y0 || 1)) * (h - 4)).toFixed(1)}`).join('');
+  const color = dir(dirValue) === 'down' ? 'var(--down)' : dir(dirValue) === 'up' ? 'var(--up)' : 'var(--text-3)';
+  return `<svg class="tile-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <path d="${d}L${w},${h}L0,${h}Z" fill="${color}" opacity=".09"></path>
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"></path>
+  </svg>`;
 }
 
 function flash(id, up) {
@@ -171,16 +189,68 @@ function renderDepot() {
       <span class="row-right">${ppl != null ? `<span class="pl ${dir(ppl)}">${signed(ppl)} $ (${signed(pplPct)} %)</span>` : ''}</span>
     </button></li>`;
   }).join('');
+  const main = pos.length === 1 ? pos[0] : null;
   body.innerHTML = `
     <div class="depot-total">
-      <span class="depot-eur">${t.eur != null ? fmt(t.eur) + ' €' : 'n. v.'}</span>
+      <div class="depot-head">
+        <span class="depot-eur">${t.eur != null ? fmt(t.eur) + ' €' : 'n. v.'}</span>
+        <span class="pl-pill ${dir(pl)}">${dir(pl) === 'up' ? icon('trend-up') : dir(pl) === 'down' ? icon('trend-down') : ''}${signed(plPct)} %</span>
+      </div>
       <span class="depot-line">
         <span><span class="num">${fmt(t.usd)} $</span></span>
-        <span>G/V <span class="pl ${dir(pl)}">${signed(plEur)} € (${signed(plPct)} %)</span></span>
+        <span>G/V <span class="pl ${dir(pl)}">${signed(plEur)} €</span></span>
         <span>Heute <span class="pl ${dir(t.day)}">${signed(t.day)} $</span></span>
       </span>
     </div>
+    ${main ? depotChart(state.history[`q:${main.symbol}`], main.einstieg, main.symbol) : ''}
     <ul class="rows">${rows}</ul>`;
+}
+
+// Kursverlauf der Depotposition mit gestrichelter Linie beim Einstiegskurs
+function depotChart(points, entry, symbol) {
+  const pts = points || [];
+  if (pts.length < 3) return `<p class="depot-chart-note">Der Kursverlauf von ${esc(symbol)} erscheint nach einigen Läufen der Action.</p>`;
+  const w = 320, h = 84, pad = 4;
+  const ys = pts.map((p) => p[1]).concat(entry);
+  const y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const sy = (v) => h - pad - ((v - y0) / (y1 - y0 || 1)) * (h - 2 * pad);
+  const sx = (i) => (i / (pts.length - 1)) * w;
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${sx(i).toFixed(1)},${sy(p[1]).toFixed(1)}`).join('');
+  const color = pts.at(-1)[1] >= entry ? 'var(--up)' : 'var(--down)';
+  const ey = sy(entry).toFixed(1);
+  return `<div class="depot-chart">
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Kursverlauf ${esc(symbol)} im Vergleich zum Einstiegskurs ${fmt(entry)} Dollar">
+      <defs><linearGradient id="dg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".22"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+      <path d="${d}L${w},${h}L0,${h}Z" fill="url(#dg)"></path>
+      <line x1="0" x2="${w}" y1="${ey}" y2="${ey}" stroke="var(--text-3)" stroke-width="1" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"></line>
+      <path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+    </svg>
+    <p class="depot-chart-note"><span>${esc(symbol)} seit ${fShort.format(new Date(pts[0][0] * 1000))} Uhr</span><span>gestrichelt: Einstieg ${fmt(entry)} $</span></p>
+  </div>`;
+}
+
+function marketState(tz, open, close, preOpen, postClose) {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date()).map((p) => [p.type, p.value]));
+  const m = +parts.hour * 60 + +parts.minute;
+  if (parts.weekday === 'Sat' || parts.weekday === 'Sun') return { cls: '', text: 'Wochenende' };
+  if (m >= open && m < close) return { cls: 'open', text: 'Geöffnet' };
+  if (preOpen != null && m >= preOpen && m < open) return { cls: 'pre', text: 'Vorbörse' };
+  if (postClose != null && m >= close && m < postClose) return { cls: 'pre', text: 'Nachbörse' };
+  return { cls: '', text: 'Geschlossen' };
+}
+
+function renderHero() {
+  const now = new Date();
+  const h = +new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: '2-digit', hourCycle: 'h23' }).formatToParts(now).find((p) => p.type === 'hour').value;
+  const greet = h < 11 ? 'Guten Morgen' : h < 18 ? 'Guten Tag' : 'Guten Abend';
+  $('#hero-date').innerHTML = `<strong>${greet}.</strong> ${esc(fDayLong.format(now))}`;
+  const x = marketState('Europe/Berlin', 9 * 60, 17 * 60 + 30);
+  const n = marketState('America/New_York', 9 * 60 + 30, 16 * 60, 4 * 60, 20 * 60);
+  $('#mkt-xetra').innerHTML = `<span class="live-dot ${x.cls}" aria-hidden="true"></span>${x.text}`;
+  $('#mkt-nyse').innerHTML = `<span class="live-dot ${n.cls}" aria-hidden="true"></span>${n.text}`;
+  const idx = (state.data?.ticker || []).filter((t) => ['ndx', 'spx', 'dji', 'dax', 'sox'].includes(t.id) && t.dp != null);
+  const plus = idx.filter((t) => t.dp > 0).length;
+  $('#mkt-breadth').textContent = idx.length ? `${plus}/${idx.length} im Plus` : 'n. v.';
 }
 
 function renderGoal() {
@@ -236,7 +306,7 @@ function renderChips(el, cats, items, active, key) {
   }).join('');
 }
 
-function renderFeed({ listEl, moreEl, items, filter, shown, ownTags }) {
+function renderFeed({ listEl, moreEl, items, filter, shown, ownTags, lead = false }) {
   const list = filter === 'alle' ? items : items.filter((i) => i.tags?.includes(filter));
   if (!list.length) {
     listEl.innerHTML = `<li class="empty">${icon('info')}Gerade keine Meldungen in dieser Kategorie.</li>`;
@@ -244,10 +314,11 @@ function renderFeed({ listEl, moreEl, items, filter, shown, ownTags }) {
     return;
   }
   const seen = state.lastSeen ? Date.parse(state.lastSeen) : null;
-  listEl.innerHTML = list.slice(0, shown).map((n) => {
+  listEl.innerHTML = list.slice(0, shown).map((n, i) => {
     const isNew = seen && n.ts && Date.parse(n.ts) > seen;
+    const cls = [isNew ? 'is-new' : '', lead && i === 0 ? 'lead' : ''].join(' ').trim();
     const tags = (n.tags || []).filter((t) => ownTags.includes(t) && t !== filter).slice(0, 2).map((t) => `<span class="tag">${TAG_LABEL[t]}</span>`).join('');
-    return `<li class="${isNew ? 'is-new' : ''}"><a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">
+    return `<li class="${cls}"><a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">
       <span class="feed-title">${esc(n.t)}</span>
       <span class="feed-meta"><span class="src">${esc(n.src)}${n.symbol ? ` (${esc(n.symbol)})` : ''}</span><time datetime="${esc(n.ts || '')}">${ago(n.ts)}</time>${tags}</span>
     </a></li>`;
@@ -259,7 +330,7 @@ function renderFeed({ listEl, moreEl, items, filter, shown, ownTags }) {
 function renderNews() {
   const items = state.data?.news || [];
   renderChips($('#news-chips'), NEWS_CATS, items, state.newsFilter, 'news');
-  renderFeed({ listEl: $('#news-list'), moreEl: $('#news-more'), items, filter: state.newsFilter, shown: state.newsShown, ownTags: ['maerkte', 'tech', 'unternehmen'] });
+  renderFeed({ listEl: $('#news-list'), moreEl: $('#news-more'), items, filter: state.newsFilter, shown: state.newsShown, ownTags: ['maerkte', 'tech', 'unternehmen'], lead: true });
 }
 
 function renderWelt() {
@@ -305,20 +376,24 @@ function renderCalendar() {
     return;
   }
   const tomorrowKey = dayKey(new Date(Date.now() + 86400000));
+  const nextUp = items.find((k) => !k.ganztags && Date.parse(k.zeit) > Date.now() && Date.parse(k.zeit) - Date.now() < 7 * 86400000);
   $('#cal-list').innerHTML = keys.slice(0, state.calDays).map((key) => {
     const list = groups.get(key);
     const d = new Date(list[0].zeit);
     const label = key === todayKey ? `Heute, ${fDayLong.format(d)}` : key === tomorrowKey ? `Morgen, ${fDayLong.format(d)}` : fDayLong.format(d);
     return `<div class="cal-day"><h3 class="cal-date ${key === todayKey ? 'is-today' : ''}">${label}</h3>
-      ${list.map((k) => {
+      <div class="cal-rows">${list.map((k) => {
         const past = !k.ganztags && Date.parse(k.zeit) < Date.now() - 30 * 60000;
         const meta = [k.land, k.hinweis, k.prognose ? `Prognose ${deNum(k.prognose)}` : null, k.vorher ? `zuvor ${deNum(k.vorher)}` : null].filter(Boolean).map((m) => `<span>${esc(m)}</span>`).join('');
-        return `<div class="cal-row ${past ? 'is-past' : ''}">
+        const isNext = k === nextUp;
+        const cd = isNext ? `<span class="countdown">${icon('clock')}${relFuture(k.zeit)}</span>` : '';
+        return `<div class="cal-row imp-row-${esc(k.wichtigkeit)} ${past ? 'is-past' : ''} ${isNext ? 'is-next' : ''}">
           <span class="cal-time ${k.ganztags ? 'allday' : ''}">${k.ganztags ? 'ganztags' : fTime.format(new Date(k.zeit))}</span>
-          <div><p class="cal-title" ${k.original && k.original !== k.titel ? `title="${esc(k.original)}"` : ''}>${esc(k.titel)}</p><p class="cal-meta">${meta}</p></div>
+          <span class="cal-dot" aria-hidden="true"></span>
+          <div><p class="cal-title" ${k.original && k.original !== k.titel ? `title="${esc(k.original)}"` : ''}>${esc(k.titel)}</p><p class="cal-meta">${meta}</p>${cd}</div>
           <span class="imp imp-${esc(k.wichtigkeit)}">${esc(k.wichtigkeit)}</span>
         </div>`;
-      }).join('')}</div>`;
+      }).join('')}</div></div>`;
   }).join('');
   $('#cal-more').hidden = keys.length <= state.calDays;
 }
@@ -328,8 +403,8 @@ const deNum = (v) => String(v).replace(/(\d)\.(\d)/g, '$1,$2');
 function relFuture(iso) {
   const min = Math.round((Date.parse(iso) - Date.now()) / 60000);
   if (min < 60) return `in ${min} Min.`;
-  if (min < 24 * 60) return `in ${Math.round(min / 60)} Std.`;
-  return `am ${fDay.format(new Date(iso))}, ${fTime.format(new Date(iso))} Uhr`;
+  if (min < 48 * 60) return `in ${Math.round(min / 60)} Std.`;
+  return `in ${Math.round(min / 1440)} Tagen`;
 }
 
 // ---------- Stand & Quellen ----------
@@ -342,8 +417,10 @@ function renderStand() {
   el.classList.toggle('is-old', age > 120);
   const d = new Date(g);
   const sameDay = dayKey(d) === dayKey(new Date());
-  el.querySelector('span').textContent = `Stand ${sameDay ? '' : fDate.format(d) + ', '}${fTime.format(d)} Uhr${age > 120 ? ' (veraltet)' : ''}`;
-  el.title = `Zuletzt aktualisiert: ${fDate.format(d)} ${fTime.format(d)} Uhr (Europe/Berlin)`;
+  el.querySelector('span').textContent = `Stand ${sameDay ? '' : fDate.format(d) + ', '}${fTime.format(d)} Uhr`;
+  el.querySelector('use').setAttribute('href', `${ICONS}#i-${age > 120 ? 'warning-circle' : 'clock'}`);
+  el.title = `Zuletzt aktualisiert: ${fDate.format(d)} ${fTime.format(d)} Uhr (Europe/Berlin)${age > 120 ? '. Die Daten sind älter als 2 Stunden.' : ''}`;
+  el.setAttribute('aria-label', el.title);
 
   const q = state.data?.quellen || {};
   $('#sources-list').innerHTML = Object.entries(q).sort(([a], [b]) => a.localeCompare(b, 'de')).map(([name, s]) =>
@@ -477,6 +554,7 @@ async function loadAll({ manual = false } = {}) {
 }
 
 function renderAll(prevPrices) {
+  renderHero();
   renderTicker(prevPrices);
   renderDepot();
   renderGoal();
@@ -580,7 +658,7 @@ document.addEventListener('visibilitychange', () => {
 loadAll();
 setInterval(() => { if (document.visibilityState === 'visible') loadAll(); }, 5 * 60 * 1000);
 setInterval(() => { if (document.visibilityState === 'visible') liveBitcoin(); }, 60 * 1000);
-setInterval(() => { if (state.data) { renderStand(); renderCalendar(); } }, 60 * 1000);
+setInterval(() => { if (state.data) { renderStand(); renderCalendar(); renderHero(); } }, 60 * 1000);
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

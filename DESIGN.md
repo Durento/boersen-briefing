@@ -25,8 +25,8 @@ nie dekorativ eingesetzt. Kein reines Schwarz, kein reines Weiß.
 
 | Token | Dunkel | Hell | Rolle |
 |---|---|---|---|
-| `--bg` | `#0c0d10` | `#f3f4f6` | Seitenhintergrund |
-| `--surface` | `#131519` | `#fcfcfd` | Panels |
+| `--bg` | `#08090b` | `#f3f4f6` | Seitenhintergrund |
+| `--surface` | `#111317` | `#fcfcfd` | Panels |
 | `--surface-2` | `#1a1d23` | `#eceef2` | Hover, Chips, Sparkline-Fläche |
 | `--border` | `#252830` | `#dcdfe5` | Haarlinien, Panel-Kanten |
 | `--text` | `#e9ebef` | `#14161a` | Primärtext, Kurse |
@@ -84,6 +84,19 @@ Gruppierung bevorzugt über Haarlinien (`divide`) statt Karten in Karten.
 
 ## 6. Komponenten
 
+Referenz aus awesome-design-md: **Linear** (Flächen-Leiter statt Schatten, 1px-Haarlinien,
+feine helle Oberkante an Panels `--edge`, enge Laufweite bei großen Zahlen und Titeln).
+
+- **Briefing-Kopf:** Begrüßung nach Tageszeit + Datum, Ziel-Satz 24/28/32px (-0.03em),
+  Fortschrittsbalken 8px mit Skala 0 / 50.000 / 100.000 €, daneben Marktlage-Leiste
+  (Xetra, New York mit echtem Offen/Geschlossen-Punkt, Anteil der Indizes im Plus).
+  Der Status-Punkt ist der einzige erlaubte farbige Punkt (echter Zustand).
+- **Mini-Verlauf** in jeder Ticker-Kachel (letzte ca. 16 Std., Farbe = Tagesrichtung).
+- **Depot-Chart:** Flächenverlauf mit gestrichelter Linie beim Einstiegskurs, G/V als Pille.
+- **Kalender-Zeitleiste:** senkrechte Haarlinie, Punkt je Termin (hoch = gefüllt Akzent,
+  mittel = Akzent-Ring, niedrig = grauer Ring), Countdown-Pille beim nächsten Termin (7 Tage).
+- **Aufmacher:** erste Marktnachricht 18.5px/600.
+
 - **Ziel-Banner:** Ziel-Satz, Fortschrittsbalken in `--accent`, darunter Resttage und
   benötigter Betrag pro Monat. Eine Zeile Meta.
 - **Ticker-Kachel:** Name, Kurs, Tagesänderung % mit Pfeil. Tippen öffnet ein Bottom-Sheet
@@ -103,7 +116,8 @@ Gruppierung bevorzugt über Haarlinien (`divide`) statt Karten in Karten.
 
 - Nur `transform` und `opacity`, 180–240ms, `cubic-bezier(0.16, 1, 0.3, 1)`
 - Erlaubt: Kurswechsel-Blink (Hintergrund 600ms), Sheet einfahren, Tab-Indikator,
-  Druck-Feedback `scale(.98)`
+  Druck-Feedback `scale(.98)`, einmaliges Einblenden beim Laden (Bereiche 70ms versetzt,
+  Kacheln 35ms versetzt), weil es zeigt, in welcher Reihenfolge die Daten ankommen
 - Unter `prefers-reduced-motion: reduce` alles sofort, ohne Animation
 
 ## 8. Do / Don't

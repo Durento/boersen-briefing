@@ -47,20 +47,31 @@
   </header>
 
   <main id="main" class="wrap">
-    <section class="goal" id="ziel" aria-labelledby="goal-title">
-      <div class="goal-head">
-        <svg class="ic goal-ic" aria-hidden="true"><use href="icons.svg#i-target"></use></svg>
-        <h1 id="goal-title">100.000 € bis Juni 2027</h1>
+    <section class="hero reveal" id="ziel" aria-labelledby="goal-title" style="--i: 0">
+      <div class="hero-main">
+        <p class="hero-date" id="hero-date">&nbsp;</p>
+        <div class="goal-head">
+          <svg class="ic goal-ic" aria-hidden="true"><use href="icons.svg#i-target"></use></svg>
+          <h1 id="goal-title">100.000 € bis Juni 2027</h1>
+        </div>
+        <div class="goal-track">
+          <div class="goal-bar" role="progressbar" aria-label="Fortschritt zum Ziel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span id="goal-fill"></span>
+          </div>
+          <div class="goal-ticks" aria-hidden="true"><span>0</span><span>25.000</span><span>50.000</span><span>75.000</span><span>100.000 €</span></div>
+        </div>
+        <div class="goal-meta" id="goal-meta">
+          <span class="skel skel-line" style="width: 60%"></span>
+        </div>
       </div>
-      <div class="goal-bar" role="progressbar" aria-label="Fortschritt zum Ziel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-        <span id="goal-fill"></span>
-      </div>
-      <div class="goal-meta" id="goal-meta">
-        <span class="skel skel-line" style="width: 60%"></span>
-      </div>
+      <dl class="hero-side" aria-label="Marktlage">
+        <div class="mstat"><dt>Xetra</dt><dd id="mkt-xetra">&nbsp;</dd></div>
+        <div class="mstat"><dt>New York</dt><dd id="mkt-nyse">&nbsp;</dd></div>
+        <div class="mstat"><dt>Aktienindizes</dt><dd id="mkt-breadth">&nbsp;</dd></div>
+      </dl>
     </section>
 
-    <section class="ticker" aria-label="Märkte im Überblick">
+    <section class="ticker reveal" aria-label="Märkte im Überblick" style="--i: 1">
       <ul class="ticker-track" id="ticker">
         <li class="tile skel-tile"></li><li class="tile skel-tile"></li><li class="tile skel-tile"></li>
         <li class="tile skel-tile"></li><li class="tile skel-tile"></li><li class="tile skel-tile"></li>
@@ -69,7 +80,7 @@
 
     <div class="grid">
       <div class="col col-a">
-        <section class="panel" id="depot" aria-labelledby="depot-title">
+        <section class="panel reveal" style="--i: 2" id="depot" aria-labelledby="depot-title">
           <header class="panel-head">
             <h2 id="depot-title">
               <svg class="ic" aria-hidden="true"><use href="icons.svg#i-briefcase"></use></svg>
@@ -81,7 +92,7 @@
           </div>
         </section>
 
-        <section class="panel" id="watch" aria-labelledby="watch-title">
+        <section class="panel reveal" style="--i: 3" id="watch" aria-labelledby="watch-title">
           <header class="panel-head">
             <h2 id="watch-title">
               <svg class="ic" aria-hidden="true"><use href="icons.svg#i-eye"></use></svg>
@@ -96,7 +107,7 @@
             <li class="skel skel-row"></li><li class="skel skel-row"></li><li class="skel skel-row"></li>
           </ul>
         </section>
-        <section class="panel" id="kalender" aria-labelledby="cal-title">
+        <section class="panel reveal" style="--i: 4" id="kalender" aria-labelledby="cal-title">
           <header class="panel-head">
             <h2 id="cal-title">
               <svg class="ic" aria-hidden="true"><use href="icons.svg#i-calendar-blank"></use></svg>
@@ -111,7 +122,7 @@
       </div>
 
       <div class="col col-b">
-        <section class="panel" id="news" aria-labelledby="news-title">
+        <section class="panel reveal" style="--i: 3" id="news" aria-labelledby="news-title">
           <header class="panel-head">
             <h2 id="news-title">
               <svg class="ic" aria-hidden="true"><use href="icons.svg#i-newspaper"></use></svg>
@@ -127,7 +138,7 @@
       </div>
 
       <div class="col col-c">
-        <section class="panel" id="welt" aria-labelledby="welt-title">
+        <section class="panel reveal" style="--i: 4" id="welt" aria-labelledby="welt-title">
           <header class="panel-head">
             <h2 id="welt-title">
               <svg class="ic" aria-hidden="true"><use href="icons.svg#i-globe-hemisphere-west"></use></svg>
