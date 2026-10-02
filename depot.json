@@ -1,0 +1,13 @@
+{
+  "_hinweis": "Deine Positionen. Neue Position = neuen Block in 'positionen' kopieren. Einstieg in der Währung der Aktie (USD).",
+  "positionen": [
+    {
+      "symbol": "NIQ",
+      "name": "NIQ Global Intelligence",
+      "boerse": "NYSE",
+      "stueck": 2,
+      "einstieg": 17.84,
+      "waehrung": "USD"
+    }
+  ]
+}

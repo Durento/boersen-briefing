@@ -1,0 +1,12 @@
+{
+  "_hinweis": "Beobachtungsliste. Nur US-Aktien und US-ETFs (Finnhub-Symbole). Die Einträge unten sind Beispiele, bitte durch deine eigenen ersetzen.",
+  "long": [
+    { "symbol": "NVDA", "name": "Nvidia", "notiz": "Beispiel: KI-Rechenzentren, Zahlen im November" },
+    { "symbol": "ASML", "name": "ASML", "notiz": "Beispiel: Auftragseingang EUV beobachten" },
+    { "symbol": "MSFT", "name": "Microsoft", "notiz": "Beispiel: Azure-Wachstum" }
+  ],
+  "short": [
+    { "symbol": "INTC", "name": "Intel", "notiz": "Beispiel: Margendruck in der Fertigung" },
+    { "symbol": "SNAP", "name": "Snap", "notiz": "Beispiel: Werbemarkt schwach" }
+  ]
+}

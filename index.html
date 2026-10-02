@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Börsen-Briefing</title>
+  <meta name="description" content="Persönliches Live-Briefing zu Märkten, Depot, Nachrichten und Terminen.">
+  <meta name="theme-color" content="#f3f4f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c0d10" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Briefing">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preload" href="Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="GeistMono-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="briefing.json" as="fetch" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Zum Inhalt springen</a>
+
+  <header class="topbar" id="top">
+    <div class="topbar-inner">
+      <div class="brand">
+        <img src="icon.svg" alt="" width="28" height="28">
+        <span>Briefing</span>
+      </div>
+      <p class="stand" id="stand" aria-live="polite">
+        <svg class="ic" aria-hidden="true"><use href="icons.svg#i-clock"></use></svg>
+        <span>Lade Daten…</span>
+      </p>
+      <div class="top-actions">
+        <button class="icon-btn" id="refresh" type="button" aria-label="Daten aktualisieren">
+          <svg class="ic" aria-hidden="true"><use href="icons.svg#i-arrow-clockwise"></use></svg>
+        </button>
+        <button class="icon-btn" id="theme" type="button" aria-label="Darstellung wechseln">
+          <svg class="ic" aria-hidden="true"><use href="icons.svg#i-monitor"></use></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <section class="goal" id="ziel" aria-labelledby="goal-title">
+      <div class="goal-head">
+        <svg class="ic goal-ic" aria-hidden="true"><use href="icons.svg#i-target"></use></svg>
+        <h1 id="goal-title">100.000 € bis Juni 2027</h1>
+      </div>
+      <div class="goal-bar" role="progressbar" aria-label="Fortschritt zum Ziel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span id="goal-fill"></span>
+      </div>
+      <div class="goal-meta" id="goal-meta">
+        <span class="skel skel-line" style="width: 60%"></span>
+      </div>
+    </section>
+
+    <section class="ticker" aria-label="Märkte im Überblick">
+      <ul class="ticker-track" id="ticker">
+        <li class="tile skel-tile"></li><li class="tile skel-tile"></li><li class="tile skel-tile"></li>
+        <li class="tile skel-tile"></li><li class="tile skel-tile"></li><li class="tile skel-tile"></li>
+      </ul>
+    </section>
+
+    <div class="grid">
+      <div class="col col-a">
+        <section class="panel" id="depot" aria-labelledby="depot-title">
+          <header class="panel-head">
+            <h2 id="depot-title">
+              <svg class="ic" aria-hidden="true"><use href="icons.svg#i-briefcase"></use></svg>
+              Mein Depot
+            </h2>
+          </header>
+          <div class="panel-body" id="depot-body">
+            <div class="skel skel-block"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="watch" aria-labelledby="watch-title">
+          <header class="panel-head">
+            <h2 id="watch-title">
+              <svg class="ic" aria-hidden="true"><use href="icons.svg#i-eye"></use></svg>
+              Beobachtungsliste
+            </h2>
+            <div class="segmented" role="tablist" aria-label="Seite wählen">
+              <button role="tab" type="button" data-side="long" aria-selected="true">Long</button>
+              <button role="tab" type="button" data-side="short" aria-selected="false">Short</button>
+            </div>
+          </header>
+          <ul class="rows" id="watch-list">
+            <li class="skel skel-row"></li><li class="skel skel-row"></li><li class="skel skel-row"></li>
+          </ul>
+        </section>
+        <section class="panel" id="kalender" aria-labelledby="cal-title">
+          <header class="panel-head">
+            <h2 id="cal-title">
+              <svg class="ic" aria-hidden="true"><use href="icons.svg#i-calendar-blank"></use></svg>
+              Termine
+            </h2>
+            <p class="panel-note" id="cal-next"></p>
+          </header>
+          <div class="chips" id="cal-chips" role="group" aria-label="Termine filtern"></div>
+          <div id="cal-list"><div class="skel skel-block"></div></div>
+          <button class="more" id="cal-more" type="button" hidden>Weitere Tage</button>
+        </section>
+      </div>
+
+      <div class="col col-b">
+        <section class="panel" id="news" aria-labelledby="news-title">
+          <header class="panel-head">
+            <h2 id="news-title">
+              <svg class="ic" aria-hidden="true"><use href="icons.svg#i-newspaper"></use></svg>
+              Marktnachrichten
+            </h2>
+          </header>
+          <div class="chips" id="news-chips" role="group" aria-label="Nachrichten filtern"></div>
+          <ul class="feed" id="news-list">
+            <li class="skel skel-row"></li><li class="skel skel-row"></li><li class="skel skel-row"></li><li class="skel skel-row"></li>
+          </ul>
+          <button class="more" id="news-more" type="button" hidden>Mehr anzeigen</button>
+        </section>
+      </div>
+
+      <div class="col col-c">
+        <section class="panel" id="welt" aria-labelledby="welt-title">
+          <header class="panel-head">
+            <h2 id="welt-title">
+              <svg class="ic" aria-hidden="true"><use href="icons.svg#i-globe-hemisphere-west"></use></svg>
+              Weltpolitik
+            </h2>
+          </header>
+          <div class="chips" id="welt-chips" role="group" aria-label="Weltpolitik filtern"></div>
+          <ul class="feed" id="welt-list">
+            <li class="skel skel-row"></li><li class="skel skel-row"></li><li class="skel skel-row"></li>
+          </ul>
+          <button class="more" id="welt-more" type="button" hidden>Mehr anzeigen</button>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer wrap">
+    <p class="disclaimer">Keine Anlageberatung.</p>
+    <p class="footer-text">
+      Kurse teils verzögert. Nasdaq 100, S&amp;P 500, Dow und SOX werden über die ETFs QQQ, SPY, DIA und SOXX abgebildet (Tagesveränderung, nicht Indexpunkte).
+      Daten: Finnhub, Twelve Data, Powered by CoinGecko, EZB über Frankfurter, U.S. Treasury, ForexFactory, GDELT und die RSS-Feeds der genannten Medien.
+    </p>
+    <details class="sources">
+      <summary>Status der Datenquellen</summary>
+      <ul id="sources-list"></ul>
+    </details>
+  </footer>
+
+  <nav class="tabbar" aria-label="Bereiche">
+    <a href="#top" data-target="top"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-house"></use></svg><span>Übersicht</span></a>
+    <a href="#depot" data-target="depot"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-briefcase"></use></svg><span>Depot</span></a>
+    <a href="#news" data-target="news"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-newspaper"></use></svg><span>News</span></a>
+    <a href="#welt" data-target="welt"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-globe-hemisphere-west"></use></svg><span>Welt</span></a>
+    <a href="#kalender" data-target="kalender"><svg class="ic" aria-hidden="true"><use href="icons.svg#i-calendar-blank"></use></svg><span>Termine</span></a>
+  </nav>
+
+  <dialog class="sheet" id="sheet" aria-labelledby="sheet-title">
+    <div class="sheet-inner">
+      <div class="sheet-grip" aria-hidden="true"></div>
+      <header class="sheet-head">
+        <h2 id="sheet-title"></h2>
+        <button class="icon-btn" type="button" id="sheet-close" aria-label="Schließen">
+          <svg class="ic" aria-hidden="true"><use href="icons.svg#i-x"></use></svg>
+        </button>
+      </header>
+      <div id="sheet-body"></div>
+    </div>
+  </dialog>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

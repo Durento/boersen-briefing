@@ -1,0 +1,7 @@
+{
+  "_hinweis": "Dein Ziel. 'weiteresVermoegenEUR' = alles, was nicht im Depot oben steht (Konto, andere Depots). Wird zum Depotwert addiert.",
+  "satz": "100.000 € bis Juni 2027",
+  "betragEUR": 100000,
+  "datum": "2027-06-30",
+  "weiteresVermoegenEUR": 0
+}

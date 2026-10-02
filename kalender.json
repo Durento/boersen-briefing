@@ -1,0 +1,9 @@
+{
+  "_hinweis": "Eigene Termine, z. B. Notenbank-Sitzungen. Zeit als ISO-Datum mit Zeitzone. wichtigkeit: hoch | mittel | niedrig. Termine von Fed und EZB 2026 bitte gelegentlich auf federalreserve.gov bzw. ecb.europa.eu prüfen.",
+  "termine": [
+    { "zeit": "2026-10-28T14:00:00-04:00", "titel": "Fed Zinsentscheid (FOMC)", "land": "USA", "wichtigkeit": "hoch", "art": "notenbank" },
+    { "zeit": "2026-10-29T14:15:00+01:00", "titel": "EZB Zinsentscheid", "land": "Eurozone", "wichtigkeit": "hoch", "art": "notenbank" },
+    { "zeit": "2026-12-09T14:00:00-05:00", "titel": "Fed Zinsentscheid (FOMC) mit Projektionen", "land": "USA", "wichtigkeit": "hoch", "art": "notenbank" },
+    { "zeit": "2026-12-17T14:15:00+01:00", "titel": "EZB Zinsentscheid", "land": "Eurozone", "wichtigkeit": "hoch", "art": "notenbank" }
+  ]
+}
